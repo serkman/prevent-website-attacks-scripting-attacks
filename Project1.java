@@ -214,10 +214,9 @@ public class Project1 extends Project {
 		}
 
 		// write the text to file
-		Charset encoding = Charset.forName("UTF8");
 		try (PrintWriter writer = new PrintWriter(
-				new FileWriter(tempFile.toFile(),encoding))) {
-			writer.printf("Passed text: %s", str);
+				new FileWriter(tempFile.toFile()))) {
+			writer.printf(Locale.ENGLISH, "Passed text: %s", str);
 			return true;
 		} catch (IOException ioe) {
 			throw new AppException("IOException in internationalization(): "
@@ -245,8 +244,7 @@ public class Project1 extends Project {
 	}
 
 	public String sanitizeText(String logText) {
-		  return Pattern.matches("[A-Za-z0-9_]+", logText)
-		      ? logText : "unauthorized user";
+		  return logText.replaceAll("[\n|\r|\t]", "_");
 		}
 	
 	/*
