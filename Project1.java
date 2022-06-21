@@ -3,6 +3,7 @@ package com.johnsonautoparts;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -16,6 +17,8 @@ import java.util.regex.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.owasp.encoder.Encode;
 
 import com.johnsonautoparts.exception.AppException;
 import com.johnsonautoparts.logger.AppLogger;
@@ -317,7 +320,7 @@ public class Project1 extends Project {
 			String readStr = new String();
 			
 			while ((bytesRead = fios.read(data, offset, data.length - offset)) != -1) {
-				readStr += new String(data, offset, bytesRead, "UTF-8");
+//				readStr += new String(data, offset, bytesRead, "UTF-8");
 				
 				offset += bytesRead;
 				if (offset >= data.length) {
@@ -325,7 +328,7 @@ public class Project1 extends Project {
 				}
 			}
 
-			return readStr;
+			return new String(data, 0, offset, "UTF-8");
 			
 		} catch (IOException ioe) {
 			throw new AppException(
@@ -356,8 +359,8 @@ public class Project1 extends Project {
 		byte[] decodedBytes = Base64.getDecoder().decode(base64Str);
 
 		// convert bytes to string
-		String s = Arrays.toString(decodedBytes);
-		byte[] byteArray = s.getBytes();
+		String s = Base64.getEncoder().encodeToString(decodedBytes);
+		byte[] byteArray = Base64.getDecoder().decode(s);
 
 		// convert string bytes to BigInt
 		return new BigInteger(byteArray);
@@ -386,19 +389,22 @@ public class Project1 extends Project {
 	 * @return String
 	 */
 	public String cleanBadHTMLTags(String str) {
-		Pattern pattern = Pattern.compile("[<&>]");
-		Matcher matcher = pattern.matcher(str);
+		
+//		Pattern pattern = Pattern.compile("[<&>]");
+//		Matcher matcher = pattern.matcher(str);
+//
+//		String cleanStr = str;
+//
+//		// variable str is potentially dirty with HTML or JavaScript tags so
+//		// remove left, right, or amp
+//		if (matcher.find()) {
+//			cleanStr = str.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+//					.replaceAll(">", "&gt;");
+//		}
+//
+//		return cleanStr;
 
-		String cleanStr = str;
-
-		// variable str is potentially dirty with HTML or JavaScript tags so
-		// remove left, right, or amp
-		if (matcher.find()) {
-			cleanStr = str.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
-					.replaceAll(">", "&gt;");
-		}
-
-		return cleanStr;
+		return Encode.forHtml(str);
 	}
 
 	/*
@@ -422,7 +428,7 @@ public class Project1 extends Project {
 				byte[] data = new byte[1024];
 				dis.readFully(data);
 
-				return new String(data);
+				return new String(data, "UTF-16LE");
 			}
 		} catch (IOException ioe) {
 			throw new AppException(
