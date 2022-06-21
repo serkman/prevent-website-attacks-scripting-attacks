@@ -1,6 +1,7 @@
 package com.johnsonautoparts;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
@@ -454,8 +457,8 @@ public class Project1 extends Project {
 		int multiplier = 20;
 		int addedCost = 1147483647;
 
-		int addCost = num + addedCost;
-		int multiCost = num * multiplier;
+		int addCost = Math.addExact(num, addedCost);
+		int multiCost = Math.multiplyExact(num, multiplier);
 
 		// return the great of the add or multiply
 		if (addCost > multiCost) {
@@ -484,6 +487,10 @@ public class Project1 extends Project {
 	public int divideTask(int monthlyTasks) throws AppException {
 		int monthly = 12;
 
+		if (monthlyTasks == 0) {
+			throw new AppException("Division by zero not possible");
+		}
+		
 		return monthly / monthlyTasks;
 	}
 
@@ -511,9 +518,14 @@ public class Project1 extends Project {
 
 			//returns NaN if input is infinity
 			double result = Math.cos(compareTaskId / userInput);
-
-			// check if we received the expected result
-			return (result == Double.NaN);
+			
+			if (Double.isInfinite(result) ) {
+				return false;
+			} else if (Double.isNaN(result)) {
+				return false;
+			} else {
+				return true;
+			}
 
 		} catch (NumberFormatException nfe) {
 			throw new AppException(
@@ -539,24 +551,32 @@ public class Project1 extends Project {
 	 */
 	public boolean numStringCompare(int num) {
 
-		String s = Double.toString(num / 1000.0);
-
-		// check for comparison to validate
-		if (s.equals("0.001")) {
+		BigDecimal result = new BigDecimal(Double.valueOf(num / 1000.0).toString());
+		
+		if (result.compareTo(new BigDecimal("0.001")) == 0) {
 			return true;
+		} else {
+			return false;
 		}
-		// string data may be in a slightly different format so perform additional
-		// check if we can match by removing any trailing zeroes
-		else {
-			s = s.replaceFirst("[.0]*$", "");
-			if (s.equals("0.001")) {
-				return true;
-			}
-			// neither check matched so return false
-			else {
-				return false;
-			}
-		}
+		
+//		String s = Double.toString(num / 1000.0);
+//
+//		// check for comparison to validate
+//		if (s.equals("0.001")) {
+//			return true;
+//		}
+//		// string data may be in a slightly different format so perform additional
+//		// check if we can match by removing any trailing zeroes
+//		else {
+//			s = s.replaceFirst("[.0]*$", "");
+//			if (s.equals("0.001")) {
+//				return true;
+//			}
+//			// neither check matched so return false
+//			else {
+//				return false;
+//			}
+//		}
 
 	}
 
@@ -575,10 +595,21 @@ public class Project1 extends Project {
 	 */
 	public int randomNumGenerate(int range) {
 		// seed the random number generator
-		Random number = new Random(99L);
+//		Random number = new Random(99L);
 
 		// generate a random number based on the range given
-		return number.nextInt(range);
+//		return number.nextInt(range);
+		
+		int nextInt = 0;
+
+		try {
+			SecureRandom random = SecureRandom.getInstanceStrong();
+			nextInt = random.nextInt(range);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return nextInt;
+
 	}
 
 }
